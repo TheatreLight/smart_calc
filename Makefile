@@ -1,7 +1,6 @@
 all:
 	make create_make
 	make -C build-smart_calc-Desktop_Qt_6_2_4_GCC_64bit-Release/ first
-	make run
 
 rebuild:
 	make clean
