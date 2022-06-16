@@ -1,4 +1,11 @@
-LIBS=-lcheck -lpthread -lrt -lm -lsubunit
+OS=$(shell uname)
+ifeq ($(OS), Linux)
+	LIBS=-lcheck -lpthread -lrt -lm -lsubunit
+	OPEN=xdg-open
+else
+	LIBS= -lcheck
+	OPEN=open
+endif
 
 all:
 
@@ -11,12 +18,17 @@ gcov_report:
 	./test.out
 	lcov -t "test.out" -o test.info -c -d .
 	genhtml -o report test.info
-	xdg-open report/index.html
+	$(OPEN) report/index.html
 
 code_style:
 	cp ../materials/linters/CPPLINT.cfg ./CPPLINT.cfg
 	python3 ../materials/linters/cpplint.py --quiet  --extension=c *.c *.h
-	cppcheck --quiet --enable=all --suppress=unusedFunction --suppress=missingIncludeSystem *.c *.h
+	cppcheck --quiet --enable=all --suppress=unusedFunction --suppress=constParameter --suppress=missingIncludeSystem *.c *.h
+
+leaks: 
+	make test
+	CK_FORK=no leaks --atExit -- ./test.out
+	make clean
 
 clean:
 	rm -rf *.o *.a *.out *.gcda *.gcno *.info *.dSYM *.info report
